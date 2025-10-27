@@ -467,6 +467,232 @@
             color: white;
         }
 
+        /* RF Top 3 섹션 */
+        .rf-top3-content {
+            display: flex;
+            gap: 20px;
+            min-height: 450px;
+        }
+
+        .rf-top3-left,
+        .rf-top3-right {
+            flex: 1;
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sentiment-company-list {
+            flex: 1;
+            overflow-y: auto;
+            max-height: 400px;
+            padding-right: 5px;
+        }
+        
+        /* 스크롤바 스타일링 */
+        .sentiment-company-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .sentiment-company-list::-webkit-scrollbar-track {
+            background: #1a1a1a;
+            border-radius: 3px;
+        }
+        
+        .sentiment-company-list::-webkit-scrollbar-thumb {
+            background: #505050;
+            border-radius: 3px;
+        }
+        
+        .sentiment-company-list::-webkit-scrollbar-thumb:hover {
+            background: #707070;
+        }
+        
+        /* RF 예측 리스트 스타일 */
+        .rf-prediction-list {
+            flex: 1;
+            overflow-y: auto;
+            max-height: 400px;
+            padding-right: 5px;
+        }
+        
+        .rf-prediction-item {
+            background: #3D3D3D;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .rf-prediction-item:hover {
+            background: #4D4D4D;
+            transform: translateX(5px);
+        }
+        
+        .rf-prediction-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .rf-prediction-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .rf-prediction-symbol {
+            font-size: 12px;
+            color: #888;
+            margin-left: 10px;
+        }
+        
+        .rf-prediction-direction {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .direction-up {
+            background: #4ade80;
+            color: black;
+        }
+        
+        .direction-down {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .rf-prediction-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .rf-prediction-detail {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .rf-prediction-label {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+        
+        .rf-prediction-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .rf-prediction-value.positive {
+            color: #4ade80;
+        }
+        
+        .rf-prediction-value.negative {
+            color: #ef4444;
+        }
+
+        .rf-top3-subtitle {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: white;
+            text-align: center;
+            border-bottom: 2px solid #505050;
+            padding-bottom: 10px;
+        }
+
+        /* 감정 분석 종목 리스트 */
+        .sentiment-company-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+            background: #1a1a1a;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .sentiment-company-item:hover {
+            background: #2D2D2D;
+            transform: translateX(5px);
+        }
+
+        .sentiment-indicator {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .sentiment-positive {
+            background: #4ade80;
+            box-shadow: 0 0 10px rgba(74, 222, 128, 0.6);
+        }
+
+        .sentiment-neutral {
+            background: #facc15;
+            box-shadow: 0 0 10px rgba(250, 204, 21, 0.6);
+        }
+
+        .sentiment-negative {
+            background: #ef4444;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+        }
+
+        .company-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .company-name {
+            color: white;
+            font-weight: 500;
+            font-size: 15px;
+        }
+
+        .company-symbol-text {
+            color: #888;
+            font-size: 13px;
+        }
+
+        .sentiment-stats {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-top: 5px;
+        }
+
+        .sentiment-stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+        }
+
+        .stat-label {
+            color: #888;
+        }
+
+        .stat-value {
+            font-weight: 600;
+        }
+
+        .stat-positive { color: #4ade80; }
+        .stat-neutral { color: #facc15; }
+        .stat-negative { color: #ef4444; }
+
         /* Chart Patterns */
         .chart-patterns {
             display: grid;
@@ -752,8 +978,22 @@
         <!-- RF Top 3 (+ 감정분석) 박스 -->
         <div class="rf-top3-box">
             <h3 class="rf-top3-title">RF Top 3 (+ 감정분석)</h3>
-            <div id="rf-top3-content">
-                <!-- RF Top 3 결과가 여기에 표시됩니다 -->
+            <div class="rf-top3-content">
+                <!-- 왼쪽: 종목 리스트 (뉴스분석 결과) -->
+                <div class="rf-top3-left">
+                    <h4 class="rf-top3-subtitle">종목 리스트 (뉴스분석 결과)</h4>
+                    <div id="sentiment-company-list" class="sentiment-company-list">
+                        <!-- 뉴스 분석 결과 종목들과 감정 분석 결과가 여기에 표시됩니다 -->
+                    </div>
+                </div>
+                
+                <!-- 오른쪽: RF Top 3 예측 -->
+                <div class="rf-top3-right">
+                    <h4 class="rf-top3-subtitle">RF Top 3 예측</h4>
+                    <div id="rf-top3-predictions" class="rf-prediction-list">
+                        <!-- RF 예측 결과가 여기에 표시됩니다 -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>

@@ -109,6 +109,12 @@ class NewsAnalysis {
                 newsAnalysisData = result.data;
                 this.displayNewsResults({ companies });
                 
+                // 감정 분석 자동 실행
+                if (companies.length > 0) {
+                    console.log('감정 분석 트리거 (success 브랜치), 종목 수:', companies.length);
+                    this.performSentimentAnalysis(companies);
+                }
+                
                 // AI분석과 차트분석에도 동일한 Company 전달
                 if (companies.length > 0) {
                     aiAnalysis.performAIAnalysis(companies);
@@ -117,6 +123,12 @@ class NewsAnalysis {
             } else {
                 // 직접 추출한 종목 사용
                 this.displayNewsResults({ companies });
+                
+                // 감정 분석 자동 실행
+                if (companies.length > 0) {
+                    console.log('감정 분석 트리거 (else 브랜치), 종목 수:', companies.length);
+                    this.performSentimentAnalysis(companies);
+                }
                 
                 if (companies.length > 0) {
                     aiAnalysis.performAIAnalysis(companies);
@@ -341,6 +353,54 @@ class NewsAnalysis {
         newsAnalysisData = data.companies;
         localStorage.setItem(STORAGE_KEYS.NEWS_DATA, JSON.stringify(newsAnalysisData));
         console.log('Saved news analysis data to localStorage');
+        
+        // RF Top 3 섹션에 종목 리스트 즉시 표시
+        this.displaySentimentCompanyList();
+    }
+    
+    displaySentimentCompanyList() {
+        const container = document.getElementById('sentiment-company-list');
+        if (!container) {
+            console.error('sentiment-company-list 컨테이너를 찾을 수 없습니다!');
+            return;
+        }
+        
+        console.log('종목 리스트 표시 시작...');
+        container.innerHTML = '';
+
+        const companyList = newsAnalysisData;
+        console.log('newsAnalysisData:', companyList);
+        
+        if (companyList.length === 0) {
+            console.warn('뉴스 분석 결과가 없습니다.');
+            container.innerHTML = '<div style="color: #888; text-align: center; padding: 20px;">뉴스 분석 결과가 없습니다.</div>';
+            return;
+        }
+        
+        // 종목 리스트를 그대로 표시
+        companyList.forEach((company, index) => {
+            console.log(`종목 ${index + 1}/${companyList.length}:`, company);
+            
+            const companyItem = document.createElement('div');
+            companyItem.className = 'sentiment-company-item';
+            
+            companyItem.innerHTML = `
+                <div class="sentiment-indicator sentiment-neutral"></div>
+                <div class="company-info">
+                    <div class="company-name">${company.name || company.symbol}</div>
+                    <div class="company-symbol-text">${company.symbol}</div>
+                    <div class="sentiment-stats">
+                        <div class="sentiment-stat-item">
+                            <span class="stat-label">감정분석 중...</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(companyItem);
+        });
+        
+        console.log('종목 리스트 표시 완료:', companyList.length, '개');
     }
 
     getMockNewsData() {
@@ -353,6 +413,236 @@ class NewsAnalysis {
                 { symbol: 'GOOGL', sentiment: 'positive', confidence: 0.76 }
             ]
         };
+    }
+
+    async performSentimentAnalysis(companies) {
+        console.log('감정 분석 시작:', companies);
+
+        try {
+            console.log('Flask API 호출 시작...');
+            console.log('요청 데이터:', { companies });
+            
+            // Flask API를 통해 감정 분석 호출 (Flask 서버로 직접 요청)
+            const response = await fetch('http://localhost:5000/api/sentiment/analyze-stocks', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ companies })
+            });
+
+            console.log('응답 받음, 상태:', response.status);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('HTTP 오류:', response.status, errorText);
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
+
+            const result = await response.json();
+            console.log('감정 분석 결과:', result);
+            
+            if (result.success && result.data) {
+                console.log('감정 분석 성공, 결과 개수:', result.data.length);
+                this.displaySentimentResults(result.data);
+                
+                // 감정 분석 완료 후 RF Top 3 예측 실행
+                this.performRFTop3Prediction();
+            } else {
+                console.warn('감정 분석 결과 없음 또는 실패:', result);
+                this.displaySentimentResults([]);
+            }
+        } catch (error) {
+            console.error('감정 분석 오류 상세:', error);
+            console.error('오류 스택:', error.stack);
+            console.error('오류 메시지:', error.message);
+            this.displaySentimentResults([]);
+        }
+    }
+
+    displaySentimentResults(sentimentData) {
+        console.log('displaySentimentResults 호출됨, 데이터:', sentimentData);
+        
+        const container = document.getElementById('sentiment-company-list');
+        if (!container) {
+            console.error('sentiment-company-list 컨테이너를 찾을 수 없습니다!');
+            return;
+        }
+        
+        container.innerHTML = '';
+
+        const companyList = newsAnalysisData;
+        console.log('표시할 회사 목록:', companyList);
+        
+        if (companyList.length === 0) {
+            container.innerHTML = '<div style="color: #888; text-align: center; padding: 20px;">뉴스 분석 결과가 없습니다.</div>';
+            return;
+        }
+        
+        // 종목 데이터와 감정 분석 결과를 매칭하여 표시
+        companyList.forEach(company => {
+            const sentimentResult = sentimentData.find(s => s.symbol === company.symbol);
+            
+            const companyItem = document.createElement('div');
+            companyItem.className = 'sentiment-company-item';
+            
+            let sentiment = 'neutral';
+            let sentimentClass = 'sentiment-neutral';
+            let score = 0;
+            let summary = { positive: 0, neutral: 0, negative: 0, total: 0 };
+            
+            if (sentimentResult) {
+                sentiment = sentimentResult.sentiment;
+                score = sentimentResult.sentiment_score || 0;
+                summary = sentimentResult.summary || summary;
+                
+                if (sentiment === 'positive') {
+                    sentimentClass = 'sentiment-positive';
+                } else if (sentiment === 'negative') {
+                    sentimentClass = 'sentiment-negative';
+                } else {
+                    sentimentClass = 'sentiment-neutral';
+                }
+                
+                companyItem.innerHTML = `
+                    <div class="sentiment-indicator ${sentimentClass}"></div>
+                    <div class="company-info">
+                        <div class="company-name">${company.name || company.symbol}</div>
+                        <div class="company-symbol-text">${company.symbol}</div>
+                        <div class="sentiment-stats">
+                            <div class="sentiment-stat-item">
+                                <span class="stat-label">점수:</span>
+                                <span class="stat-value" style="color: ${this.getSentimentColor(sentiment)}">
+                                    ${score.toFixed(2)}
+                                </span>
+                            </div>
+                            <div class="sentiment-stat-item">
+                                <span class="stat-label">긍정:</span>
+                                <span class="stat-value stat-positive">${summary.positive || 0}</span>
+                            </div>
+                            <div class="sentiment-stat-item">
+                                <span class="stat-label">중립:</span>
+                                <span class="stat-value stat-neutral">${summary.neutral || 0}</span>
+                            </div>
+                            <div class="sentiment-stat-item">
+                                <span class="stat-label">부정:</span>
+                                <span class="stat-value stat-negative">${summary.negative || 0}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // 감정 분석 결과가 없으면 기본 정보만 표시
+                companyItem.innerHTML = `
+                    <div class="sentiment-indicator sentiment-neutral"></div>
+                    <div class="company-info">
+                        <div class="company-name">${company.name || company.symbol}</div>
+                        <div class="company-symbol-text">${company.symbol}</div>
+                        <div class="sentiment-stats">
+                            <div class="sentiment-stat-item">
+                                <span class="stat-label">감정분석 없음</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.appendChild(companyItem);
+        });
+    }
+
+    getSentimentColor(sentiment) {
+        switch (sentiment) {
+            case 'positive': return '#4ade80';
+            case 'negative': return '#ef4444';
+            case 'neutral': return '#facc15';
+            default: return '#888';
+        }
+    }
+
+    async performRFTop3Prediction() {
+        console.log('RF Top 3 예측 시작');
+        
+        if (!newsAnalysisData || newsAnalysisData.length === 0) {
+            console.log('뉴스 분석 데이터가 없습니다.');
+            return;
+        }
+
+        try {
+            const response = await fetch('http://localhost:5000/api/rf-top3/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ companies: newsAnalysisData })
+            });
+
+            const result = await response.json();
+            
+            if (result.success && result.data) {
+                console.log('RF Top 3 예측 완료:', result.data);
+                this.displayRFTop3Results(result.data);
+            } else {
+                console.warn('RF Top 3 예측 실패:', result);
+            }
+        } catch (error) {
+            console.error('RF Top 3 예측 오류:', error);
+        }
+    }
+
+    displayRFTop3Results(predictions) {
+        const container = document.getElementById('rf-top3-predictions');
+        if (!container) {
+            console.error('rf-top3-predictions 컨테이너를 찾을 수 없습니다!');
+            return;
+        }
+
+        container.innerHTML = '';
+
+        if (!predictions || predictions.length === 0) {
+            container.innerHTML = '<div style="color: #888; text-align: center; padding: 20px;">예측 결과가 없습니다.</div>';
+            return;
+        }
+
+        predictions.forEach(prediction => {
+            const item = document.createElement('div');
+            item.className = 'rf-prediction-item';
+
+            const directionClass = prediction.direction === 1 ? 'direction-up' : 'direction-down';
+            const valueClass = prediction.change_percent >= 0 ? 'positive' : 'negative';
+
+            item.innerHTML = `
+                <div class="rf-prediction-header">
+                    <div>
+                        <span class="rf-prediction-name">${prediction.name || prediction.symbol}</span>
+                        <span class="rf-prediction-symbol">${prediction.symbol}</span>
+                    </div>
+                    <span class="rf-prediction-direction ${directionClass}">${prediction.prediction || (prediction.direction === 1 ? '상승' : '하락')}</span>
+                </div>
+                <div class="rf-prediction-details">
+                    <div class="rf-prediction-detail">
+                        <div class="rf-prediction-label">현재가</div>
+                        <div class="rf-prediction-value">$${prediction.current_price.toFixed(2)}</div>
+                    </div>
+                    <div class="rf-prediction-detail">
+                        <div class="rf-prediction-label">예측가</div>
+                        <div class="rf-prediction-value">$${prediction.predicted_price.toFixed(2)}</div>
+                    </div>
+                    <div class="rf-prediction-detail">
+                        <div class="rf-prediction-label">변동률</div>
+                        <div class="rf-prediction-value ${valueClass}">${prediction.change_percent >= 0 ? '+' : ''}${prediction.change_percent.toFixed(2)}%</div>
+                    </div>
+                    <div class="rf-prediction-detail">
+                        <div class="rf-prediction-label">신뢰도</div>
+                        <div class="rf-prediction-value">${(prediction.confidence * 100).toFixed(1)}%</div>
+                    </div>
+                </div>
+            `;
+
+            container.appendChild(item);
+        });
+
+        console.log('RF Top 3 결과 표시 완료:', predictions.length, '개');
     }
 }
 
@@ -1010,6 +1300,12 @@ function loadSavedAnalysisData() {
                 console.log('Loading saved news analysis data:', newsData.length, 'companies');
                 newsAnalysisData = newsData;
                 newsAnalysis.displayNewsResults({ companies: newsData });
+                
+                // 감정 분석 자동 실행 (뉴스 분석 결과가 있으면)
+                if (newsData && newsData.length > 0) {
+                    console.log('이전 데이터 감정 분석 실행, 종목 수:', newsData.length);
+                    newsAnalysis.performSentimentAnalysis(newsData);
+                }
                 
                 // AI 분석 결과 복원
                 const savedAIData = localStorage.getItem(STORAGE_KEYS.AI_DATA);

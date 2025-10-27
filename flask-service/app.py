@@ -18,6 +18,8 @@ from services.chart_pattern_service import analyze_chart_patterns_endpoint
 from services.news_rss_service import get_news_rss_endpoint
 from services.portfolio_optimizer_service import optimize_portfolio_endpoint, get_available_stocks
 from services.chatbot_service import chat_endpoint
+from services.sentiment_analysis_service import analyze_stock_sentiments_endpoint
+from services.rf_top3_service import analyze_rf_top3_endpoint
 
 # 환경 변수 로드
 load_dotenv()
@@ -535,6 +537,36 @@ def chatbot_chat():
         return jsonify(result)
     except Exception as e:
         logger.error(f"Error in chatbot_chat: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@app.route('/api/sentiment/analyze-stocks', methods=['POST'])
+def analyze_sentiment_stocks():
+    """종목별 감정 분석 엔드포인트"""
+    try:
+        data = request.get_json()
+        result = analyze_stock_sentiments_endpoint(data)
+        return jsonify(result)
+    except Exception as e:
+        logger.error(f"Error in analyze_sentiment_stocks: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@app.route('/api/rf-top3/predict', methods=['POST'])
+def predict_rf_top3():
+    """RF Top 3 예측 엔드포인트"""
+    try:
+        data = request.get_json()
+        result = analyze_rf_top3_endpoint(data)
+        return jsonify(result)
+    except Exception as e:
+        logger.error(f"Error in predict_rf_top3: {str(e)}")
         return jsonify({
             'success': False,
             'error': str(e)
