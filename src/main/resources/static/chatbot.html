@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASR - AI챗봇</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Micro+5&display=swap" rel="stylesheet">
+    <style>
+        /* CSS 리셋 및 기본 레이아웃 - index.html과 동일 */
+        * { box-sizing: border-box; }
+        body { background: white; color: black; margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; overflow-x: hidden; }
+        .header { background: transparent; color: white; }
+        .header > div { display: flex; justify-content: space-between; align-items: center; max-width: 1600px; margin: 0 auto; }
+        .logo-section { flex: 0 0 auto; }
+        .asr-logo { font-family: 'Micro 5', monospace; font-weight: bold; font-size: 64px; letter-spacing: 2px; color: black !important; text-decoration: none; }
+        .nav-links { display: flex; gap: 50px; align-items: center; flex: 1; justify-content: center; }
+        .nav-link { color: black !important; text-decoration: none; font-weight: 500; font-size: 18px; transition: color 0.3s ease; }
+        .nav-link:hover { color: #3b82f6 !important; }
+        .login-btn { background: black; color: white; border: 1px solid #333; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 16px; transition: all 0.3s ease; flex: 0 0 auto; }
+        .login-btn:hover { background: #333; border-color: #555; }
+        .index-box { background: #2D2D2D; color: white; margin: 5px 0; border-radius: 0; padding: 10px 20px; display: flex; gap: 60px; align-items: center; font-size: 16px; overflow: hidden; position: relative; }
+        .index-container { display: flex; gap: 120px; align-items: center; animation: scroll-left 120s linear infinite; animation-delay: 1s; white-space: nowrap; }
+        @keyframes scroll-left { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }
+        .index-item { display: flex; align-items: center; gap: 8px; }
+        .positive { color: #4ade80; }
+        .negative { color: #f87171; }
+        
+        /* 챗봇 박스 */
+        .chatbot-box {
+            background: #2D2D2D;
+            color: white;
+            margin: 20px auto;
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 1400px;
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chatbot-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #3b82f6;
+        }
+        
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #1a1a1a;
+            border-radius: 8px;
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .message.user {
+            flex-direction: row-reverse;
+        }
+        
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        
+        .message.user .message-avatar {
+            background: #3b82f6;
+        }
+        
+        .message.assistant .message-avatar {
+            background: #10b981;
+        }
+        
+        .message-content {
+            background: #2D2D2D;
+            padding: 15px;
+            border-radius: 8px;
+            max-width: 80%;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .message.user .message-content {
+            background: #3b82f6;
+        }
+        
+        .chat-input-area {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 15px;
+            border: 1px solid #555;
+            border-radius: 6px;
+            background: #1a1a1a;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .chat-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        
+        .send-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .send-btn:hover {
+            background: #2563eb;
+        }
+        
+        .send-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        
+        .delete-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .delete-btn:hover {
+            background: #b91c1c;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #555;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="logo-section"><a href="/index.html" class="asr-logo">ASR</a></div>
+            <nav class="nav-links">
+                <a href="/index.html" class="nav-link">홈</a>
+                <a href="/chart.html" class="nav-link">차트</a>
+                <a href="/news.html" class="nav-link">뉴스</a>
+                <a href="/chatbot.html" class="nav-link">AI챗봇</a>
+                <a href="/board.html" class="nav-link">게시판</a>
+            </nav>
+            <a href="/login.html" class="login-btn">로그인</a>
+        </div>
+    </header>
+    <div class="index-box">
+        <div class="index-container" id="index-container"><!-- 동적 데이터 --></div>
+    </div>
+    
+    <!-- AI 챗봇 박스 -->
+    <div class="chatbot-box">
+        <div class="chatbot-title">🤖 AI 금융 전문 챗봇</div>
+        <p style="color: #aaa; margin-bottom: 30px;">궁금한 점을 무엇이든 물어보세요.</p>
+        
+        <!-- 채팅 컨테이너 -->
+        <div class="chat-container" id="chat-container">
+            <!-- 메시지가 여기에 동적으로 추가됩니다 -->
+        </div>
+        
+        <!-- 채팅 입력 영역 -->
+        <div class="chat-input-area">
+            <input type="text" class="chat-input" id="chat-input" placeholder="오늘의 시장 상황을 알려줘" autocomplete="off">
+            <button class="send-btn" id="send-btn" onclick="sendMessage()">전송</button>
+        </div>
+        
+        <!-- 대화 삭제 버튼 -->
+        <div style="margin-top: 15px; text-align: right;">
+            <button class="delete-btn" id="delete-btn" onclick="deleteChatHistory()">대화 내용 전체 삭제</button>
+        </div>
+    </div>
+    
+    <script src="js/chart.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/chatbot.js"></script>
+</body>
+</html>

@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASR - 회원가입</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Micro+5&display=swap" rel="stylesheet">
+
+    <style>
+        /* CSS 리셋 */
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: white;
+            color: black;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        /* 헤더 영역 */
+        .header {
+            background: transparent;
+            color: white;
+        }
+        
+        .header > div {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        /* ASR 로고 */
+        .logo-section {
+            flex: 0 0 auto;
+        }
+        
+        .asr-logo {
+            font-family: 'Micro 5', monospace;
+            font-weight: bold;
+            font-size: 64px;
+            letter-spacing: 2px;
+            color: black !important;
+            text-decoration: none;
+        }
+        
+        /* 네비게이션 */
+        .nav-links {
+            display: flex;
+            gap: 50px;
+            align-items: center;
+            flex: 1;
+            justify-content: center;
+        }
+        
+        .nav-link {
+            color: black !important;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 18px;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: #3b82f6 !important;
+        }
+        
+        /* 로그인 버튼 */
+        .login-btn {
+            background: black;
+            color: white;
+            border: 1px solid #333;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            flex: 0 0 auto;
+        }
+        
+        .login-btn:hover {
+            background: #333;
+            border-color: #555;
+        }
+        
+        /* 박스 공통 스타일 */
+        .box {
+            background: black;
+            color: white;
+            margin: 10px;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        /* 첫 번째 박스 - 검색 */
+        .search-box {
+            background: black;
+            color: white;
+            margin: 5px;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        
+
+        /* 두 번째 박스 - 지수 */
+        .index-box {
+            background: #2D2D2D;
+            color: white;
+            margin: 5px 0;
+            border-radius: 0;
+            padding: 10px 20px;
+            display: flex;
+            gap: 60px;
+            align-items: center;
+            font-size: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .index-container {
+            display: flex;
+            gap: 120px;
+            align-items: center;
+            animation: scroll-left 120s linear infinite;
+            animation-delay: 1s;
+            white-space: nowrap;
+        }
+
+        @keyframes scroll-left {
+            0% {
+                transform: translateX(0%);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+        
+        .index-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        
+        
+        /* 세 번째 박스 - 메인 컨텐츠 */
+        
+        
+        .index-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        
+        
+        .positive {
+            color: #4ade80;
+        }
+        
+        .negative {
+            color: #f87171;
+        }
+        
+        /* 회원가입 폼 영역 */
+        .register-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            padding: 40px 20px;
+        }
+        
+        .register-title {
+            font-family: 'Micro 5', monospace;
+            font-weight: bold;
+            font-size: 64px;
+            letter-spacing: 2px;
+            color: black;
+            margin-bottom: 40px;
+        }
+        
+        .register-form {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .register-submit-btn {
+            width: 100%;
+            background: black;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-bottom: 16px;
+        }
+        
+        .register-submit-btn:hover {
+            background: #333;
+        }
+        
+        .login-link-btn {
+            width: 100%;
+            background: white;
+            color: black;
+            border: 2px solid black;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+        }
+        
+        .login-link-btn:hover {
+            background: black;
+            color: white;
+        }
+        
+        /* 차트 영역 */
+        
+        
+        
+        
+        /* 로딩 오버레이 */
+        
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <!-- Logo -->
+            <div class="logo-section">
+                <a href="/" class="asr-logo">ASR</a>
+            </div>
+            
+            <!-- Navigation -->
+            <nav class="nav-links">
+                <a href="/index.html" class="nav-link">홈</a>
+                <a href="/chart.html" class="nav-link">차트</a>
+                <a href="/news.html" class="nav-link">뉴스</a>
+                <a href="/chatbot.html" class="nav-link">AI챗봇</a>
+                <a href="/board.html" class="nav-link">게시판</a>
+            </nav>
+            
+            <!-- Login Button -->
+            <a href="/login.html" class="login-btn">로그인</a>
+        </div>
+    </header>
+
+    <!-- 첫 번째 박스 - 지수 -->
+    <div class="index-box">
+        <div class="index-container" id="index-container">
+            <!-- 실제 데이터가 여기에 동적으로 추가됩니다 -->
+        </div>
+    </div>
+
+    <!-- 회원가입 폼 영역 -->
+    <div class="register-container">
+        <h1 class="register-title">ASR</h1>
+        
+        <form class="register-form" id="registerForm">
+            <div class="form-group">
+                <label for="username" class="form-label">아이디</label>
+                <input type="text" id="username" name="username" class="form-input" placeholder="아이디를 입력하세요" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password" class="form-label">비밀번호</label>
+                <input type="password" id="password" name="password" class="form-input" placeholder="비밀번호를 입력하세요" required>
+            </div>
+            
+            <button type="submit" class="register-submit-btn">회원가입</button>
+            
+            <a href="/login.html" class="login-link-btn">로그인으로 돌아가기</a>
+        </form>
+    </div>
+</body>
+    
+    <!-- Main JavaScript -->
+    <script src="js/chart.js"></script>
+    <script src="js/auth.js"></script>
+    
+    <!-- 회원가입 JavaScript -->
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // 간단한 유효성 검사
+            if (username.length < 3) {
+                alert('아이디는 3자 이상이어야 합니다.');
+                return;
+            }
+            
+            if (password.length < 6) {
+                alert('비밀번호는 6자 이상이어야 합니다.');
+                return;
+            }
+            
+            // 회원가입 데이터
+            const registerData = {
+                username: username,
+                password: password
+            };
+            
+            try {
+                // 회원가입 API 호출
+                const response = await fetch('/api/user/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(registerData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(result.message);
+                    // 로그인 페이지로 이동
+                    window.location.href = '/login.html';
+                } else {
+                    alert(result.message);
+                }
+                
+            } catch (error) {
+                console.error('회원가입 오류:', error);
+                alert('네트워크 오류가 발생했습니다. 다시 시도해주세요.');
+            }
+        });
+    </script>
+</html>

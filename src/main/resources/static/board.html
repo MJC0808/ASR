@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASR - 게시판</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Micro+5&display=swap" rel="stylesheet">
+    <style>
+        /* CSS 리셋 및 기본 레이아웃 - index.html과 동일 */
+        * { box-sizing: border-box; }
+        body { background: white; color: black; margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; overflow-x: hidden; }
+        .header { background: transparent; color: white; }
+        .header > div { display: flex; justify-content: space-between; align-items: center; max-width: 1600px; margin: 0 auto; }
+        .logo-section { flex: 0 0 auto; }
+        .asr-logo { font-family: 'Micro 5', monospace; font-weight: bold; font-size: 64px; letter-spacing: 2px; color: black !important; text-decoration: none; }
+        .nav-links { display: flex; gap: 50px; align-items: center; flex: 1; justify-content: center; }
+        .nav-link { color: black !important; text-decoration: none; font-weight: 500; font-size: 18px; transition: color 0.3s ease; }
+        .nav-link:hover { color: #3b82f6 !important; }
+        .login-btn { background: black; color: white; border: 1px solid #333; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 16px; transition: all 0.3s ease; flex: 0 0 auto; }
+        .login-btn:hover { background: #333; border-color: #555; }
+        .index-box { background: #2D2D2D; color: white; margin: 5px 0; border-radius: 0; padding: 10px 20px; display: flex; gap: 60px; align-items: center; font-size: 16px; overflow: hidden; position: relative; }
+        .index-container { display: flex; gap: 120px; align-items: center; animation: scroll-left 120s linear infinite; animation-delay: 1s; white-space: nowrap; }
+        @keyframes scroll-left { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }
+        .index-item { display: flex; align-items: center; gap: 8px; }
+        .positive { color: #4ade80; }
+        .negative { color: #f87171; }
+        
+        /* 게시판 스타일 */
+        .board-container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+        .board-tabs { display: flex; gap: 20px; margin-bottom: 30px; border-bottom: 2px solid #e5e7eb; }
+        .board-tab { padding: 15px 30px; background: none; border: none; font-size: 18px; font-weight: 600; color: #6b7280; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s ease; }
+        .board-tab.active { color: #3b82f6; border-bottom-color: #3b82f6; }
+        .board-tab:hover { color: #3b82f6; }
+        .board-content { display: none; }
+        .board-content.active { display: block; }
+        .board-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .board-title { font-size: 24px; font-weight: bold; color: #1f2937; }
+        .write-btn { background: #3b82f6; color: white; padding: 12px 24px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.3s ease; }
+        .write-btn:hover { background: #2563eb; }
+        .write-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+        .post-list { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; }
+        .post-item { padding: 20px; border-bottom: 1px solid #f3f4f6; transition: background 0.2s ease; cursor: pointer; }
+        .post-item:hover { background: #f9fafb; }
+        .post-item:last-child { border-bottom: none; }
+        .post-title { font-size: 18px; font-weight: 600; color: #1f2937; margin-bottom: 8px; }
+        .post-meta { display: flex; gap: 20px; font-size: 14px; color: #6b7280; }
+        .post-content { font-size: 14px; color: #4b5563; margin-top: 8px; line-height: 1.5; }
+        .post-actions { display: flex; gap: 10px; margin-top: 10px; }
+        .post-action-btn { padding: 6px 12px; border: 1px solid #d1d5db; background: white; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s ease; }
+        .post-action-btn:hover { background: #f3f4f6; }
+        .post-action-btn.edit { color: #3b82f6; border-color: #3b82f6; }
+        .post-action-btn.delete { color: #ef4444; border-color: #ef4444; }
+        .empty-state { text-align: center; padding: 60px 20px; color: #6b7280; }
+        .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+        
+        /* 모달 스타일 */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        .modal-content { background: white; margin: 5% auto; padding: 0; width: 90%; max-width: 600px; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
+        .modal-title { font-size: 20px; font-weight: 600; color: #1f2937; }
+        .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280; }
+        .modal-body { padding: 24px; }
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; margin-bottom: 8px; font-weight: 600; color: #374151; }
+        .form-input, .form-textarea { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px; transition: border-color 0.2s ease; }
+        .form-input:focus, .form-textarea:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        .form-textarea { min-height: 120px; resize: vertical; }
+        .modal-footer { padding: 20px 24px; border-top: 1px solid #e5e7eb; display: flex; gap: 12px; justify-content: flex-end; }
+        .btn { padding: 12px 24px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-primary:hover { background: #2563eb; }
+        .btn-secondary { background: #6b7280; color: white; }
+        .btn-secondary:hover { background: #4b5563; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="logo-section"><a href="/index.html" class="asr-logo">ASR</a></div>
+            <nav class="nav-links">
+                <a href="/index.html" class="nav-link">홈</a>
+                <a href="/chart.html" class="nav-link">차트</a>
+                <a href="/news.html" class="nav-link">뉴스</a>
+                <a href="/chatbot.html" class="nav-link">AI챗봇</a>
+                <a href="/board.html" class="nav-link">게시판</a>
+            </nav>
+            <a href="/login.html" class="login-btn">로그인</a>
+        </div>
+    </header>
+    <div class="index-box">
+        <div class="index-container" id="index-container"><!-- 동적 데이터 --></div>
+    </div>
+    
+    <!-- 게시판 컨테이너 -->
+    <div class="board-container">
+        <!-- 탭 메뉴 -->
+        <div class="board-tabs">
+            <button class="board-tab active" onclick="switchTab('discussion')">
+                <i class="fas fa-comments"></i> 토론 게시판
+            </button>
+            <button class="board-tab" onclick="switchTab('memo')">
+                <i class="fas fa-sticky-note"></i> 메모장
+            </button>
+        </div>
+        
+        <!-- 토론 게시판 -->
+        <div id="discussion-content" class="board-content active">
+            <div class="board-header">
+                <h2 class="board-title">토론 게시판</h2>
+                <button class="write-btn" onclick="openWriteModal('discussion')">
+                    <i class="fas fa-pen"></i> 글쓰기
+                </button>
+            </div>
+            <div id="discussion-list" class="post-list">
+                <!-- 동적으로 로드됨 -->
+            </div>
+        </div>
+        
+        <!-- 메모장 -->
+        <div id="memo-content" class="board-content">
+            <div class="board-header">
+                <h2 class="board-title">메모장</h2>
+                <button class="write-btn" onclick="openWriteModal('memo')">
+                    <i class="fas fa-pen"></i> 메모쓰기
+                </button>
+            </div>
+            <div id="memo-list" class="post-list">
+                <!-- 동적으로 로드됨 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 글쓰기/수정 모달 -->
+    <div id="write-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">글쓰기</h3>
+                <button class="modal-close" onclick="closeWriteModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="write-form">
+                    <div class="form-group">
+                        <label class="form-label" for="post-title">제목</label>
+                        <input type="text" id="post-title" class="form-input" placeholder="제목을 입력하세요" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="post-content">내용</label>
+                        <textarea id="post-content" class="form-textarea" placeholder="내용을 입력하세요" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeWriteModal()">취소</button>
+                <button type="button" class="btn btn-primary" onclick="savePost()">저장</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/chart.js"></script>
+    <script src="js/auth.js"></script>
+    
+    <!-- 게시판 JavaScript -->
+    <script>
+        let currentTab = 'discussion';
+        let currentPostType = 'discussion';
+        let editingPostId = null;
+        let isLoggedIn = false;
+        
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLoginStatus();
+            loadPosts('discussion');
+        });
+        
+        // 로그인 상태 확인
+        async function checkLoginStatus() {
+            try {
+                console.log('Checking login status...');
+                const response = await fetch('/api/user/status', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                console.log('Login status response:', data);
+                isLoggedIn = data.isLoggedIn;
+                
+                // 로그인 상태에 따라 버튼 활성화/비활성화
+                const writeButtons = document.querySelectorAll('.write-btn');
+                writeButtons.forEach(btn => {
+                    btn.disabled = !isLoggedIn;
+                    if (!isLoggedIn) {
+                        btn.title = '로그인이 필요합니다';
+                    }
+                });
+            } catch (error) {
+                console.error('로그인 상태 확인 실패:', error);
+            }
+        }
+        
+        // 탭 전환
+        function switchTab(tab) {
+            // 탭 버튼 활성화 상태 변경
+            document.querySelectorAll('.board-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+            
+            // 컨텐츠 표시 변경
+            document.querySelectorAll('.board-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(`${tab}-content`).classList.add('active');
+            
+            currentTab = tab;
+            loadPosts(tab);
+        }
+        
+        // 게시글 목록 로드
+        async function loadPosts(type) {
+            const listElement = document.getElementById(`${type}-list`);
+            
+            try {
+                const endpoint = type === 'discussion' ? '/api/board/discussion' : '/api/board/memo';
+                const response = await fetch(endpoint, {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    const posts = data.posts || data.memos || [];
+                    displayPosts(listElement, posts, type);
+                } else {
+                    showError(listElement, data.message || '게시글을 불러오는데 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('게시글 로드 실패:', error);
+                showError(listElement, '게시글을 불러오는데 실패했습니다.');
+            }
+        }
+        
+        // 게시글 목록 표시
+        function displayPosts(listElement, posts, type) {
+            if (posts.length === 0) {
+                listElement.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-${type === 'discussion' ? 'comments' : 'sticky-note'}"></i>
+                        <p>아직 작성된 ${type === 'discussion' ? '게시글' : '메모'}이 없습니다.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            listElement.innerHTML = posts.map(post => `
+                <div class="post-item" onclick="viewPost(${post.postId || post.memoId}, '${type}')">
+                    <div class="post-title">${escapeHtml(post.title)}</div>
+                    <div class="post-meta">
+                        <span><i class="fas fa-user"></i> 사용자 ${post.userId}</span>
+                        <span><i class="fas fa-clock"></i> ${formatDate(post.createdAt)}</span>
+                    </div>
+                    <div class="post-content">${escapeHtml(post.content.substring(0, 100))}${post.content.length > 100 ? '...' : ''}</div>
+                    ${isLoggedIn ? `
+                        <div class="post-actions" onclick="event.stopPropagation()">
+                            <button class="post-action-btn edit" onclick="editPost(${post.postId || post.memoId}, '${type}')">
+                                <i class="fas fa-edit"></i> 수정
+                            </button>
+                            <button class="post-action-btn delete" onclick="deletePost(${post.postId || post.memoId}, '${type}')">
+                                <i class="fas fa-trash"></i> 삭제
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+        
+        // 에러 표시
+        function showError(listElement, message) {
+            listElement.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+        
+        // 글쓰기 모달 열기
+        function openWriteModal(type) {
+            if (!isLoggedIn) {
+                alert('로그인이 필요합니다.');
+                return;
+            }
+            
+            currentPostType = type;
+            editingPostId = null;
+            
+            document.getElementById('modal-title').textContent = type === 'discussion' ? '토론 게시글 작성' : '메모 작성';
+            document.getElementById('post-title').value = '';
+            document.getElementById('post-content').value = '';
+            document.getElementById('write-modal').style.display = 'block';
+        }
+        
+        // 글쓰기 모달 닫기
+        function closeWriteModal() {
+            document.getElementById('write-modal').style.display = 'none';
+            editingPostId = null;
+        }
+        
+        // 게시글 보기
+        function viewPost(id, type) {
+            // 간단한 상세보기 (실제로는 별도 페이지나 모달로 구현 가능)
+            alert(`게시글 ID: ${id}\n타입: ${type === 'discussion' ? '토론 게시판' : '메모장'}`);
+        }
+        
+        // 게시글 수정
+        function editPost(id, type) {
+            if (!isLoggedIn) {
+                alert('로그인이 필요합니다.');
+                return;
+            }
+            
+            currentPostType = type;
+            editingPostId = id;
+            
+            // 기존 데이터 로드
+            loadPostForEdit(id, type);
+        }
+        
+        // 수정용 게시글 데이터 로드
+        async function loadPostForEdit(id, type) {
+            try {
+                const endpoint = `/api/board/${type}/${id}`;
+                const response = await fetch(endpoint, {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    const post = data.post || data.memo;
+                    document.getElementById('modal-title').textContent = type === 'discussion' ? '토론 게시글 수정' : '메모 수정';
+                    document.getElementById('post-title').value = post.title;
+                    document.getElementById('post-content').value = post.content;
+                    document.getElementById('write-modal').style.display = 'block';
+                } else {
+                    alert(data.message || '게시글을 불러오는데 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('게시글 로드 실패:', error);
+                alert('게시글을 불러오는데 실패했습니다.');
+            }
+        }
+        
+        // 게시글 저장
+        async function savePost() {
+            // 먼저 로그인 상태 확인
+            if (!isLoggedIn) {
+                alert('로그인이 필요합니다.');
+                return;
+            }
+            
+            const title = document.getElementById('post-title').value.trim();
+            const content = document.getElementById('post-content').value.trim();
+            
+            if (!title || !content) {
+                alert('제목과 내용을 모두 입력해주세요.');
+                return;
+            }
+            
+            try {
+                const isEdit = editingPostId !== null;
+                const endpoint = isEdit 
+                    ? `/api/board/${currentPostType}/${editingPostId}`
+                    : `/api/board/${currentPostType}`;
+                
+                const method = isEdit ? 'PUT' : 'POST';
+                
+                console.log('Saving post:', { endpoint, method, title, content });
+                console.log('Cookies:', document.cookie);
+                
+                const response = await fetch(endpoint, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ title, content })
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (data.success) {
+                    alert(data.message);
+                    closeWriteModal();
+                    loadPosts(currentPostType);
+                } else {
+                    alert(data.message || '저장에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('저장 실패:', error);
+                alert('저장에 실패했습니다.');
+            }
+        }
+        
+        // 게시글 삭제
+        async function deletePost(id, type) {
+            if (!isLoggedIn) {
+                alert('로그인이 필요합니다.');
+                return;
+            }
+            
+            if (!confirm('정말 삭제하시겠습니까?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/board/${type}/${id}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    loadPosts(type);
+                } else {
+                    alert(data.message || '삭제에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('삭제 실패:', error);
+                alert('삭제에 실패했습니다.');
+            }
+        }
+        
+        // 유틸리티 함수들
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ko-KR') + ' ' + date.toLocaleTimeString('ko-KR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        }
+        
+        // 모달 외부 클릭 시 닫기
+        window.onclick = function(event) {
+            const modal = document.getElementById('write-modal');
+            if (event.target === modal) {
+                closeWriteModal();
+            }
+        }
+    </script>
+</body>
+</html>

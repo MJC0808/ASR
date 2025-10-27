@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASR - 내정보</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Micro+5&display=swap" rel="stylesheet">
+
+    <style>
+        /* CSS 리셋 */
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: white;
+            color: black;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        /* 헤더 영역 */
+        .header {
+            background: transparent;
+            color: white;
+        }
+        
+        .header > div {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        /* ASR 로고 */
+        .logo-section {
+            flex: 0 0 auto;
+        }
+        
+        .asr-logo {
+            font-family: 'Micro 5', monospace;
+            font-weight: bold;
+            font-size: 64px;
+            letter-spacing: 2px;
+            color: black !important;
+            text-decoration: none;
+        }
+        
+        /* 네비게이션 */
+        .nav-links {
+            display: flex;
+            gap: 50px;
+            align-items: center;
+            flex: 1;
+            justify-content: center;
+        }
+        
+        .nav-link {
+            color: black !important;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 18px;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: #3b82f6 !important;
+        }
+        
+        /* 로그인 버튼 */
+        .login-btn {
+            background: black;
+            color: white;
+            border: 1px solid #333;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            flex: 0 0 auto;
+        }
+        
+        .login-btn:hover {
+            background: #333;
+            border-color: #555;
+        }
+        
+        /* 박스 공통 스타일 */
+        .box {
+            background: black;
+            color: white;
+            margin: 10px;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        /* 첫 번째 박스 - 검색 */
+        .search-box {
+            background: black;
+            color: white;
+            margin: 5px;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        
+
+        /* 두 번째 박스 - 지수 */
+        .index-box {
+            background: #2D2D2D;
+            color: white;
+            margin: 5px 0;
+            border-radius: 0;
+            padding: 10px 20px;
+            display: flex;
+            gap: 60px;
+            align-items: center;
+            font-size: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .index-container {
+            display: flex;
+            gap: 120px;
+            align-items: center;
+            animation: scroll-left 120s linear infinite;
+            animation-delay: 1s;
+            white-space: nowrap;
+        }
+
+        @keyframes scroll-left {
+            0% {
+                transform: translateX(0%);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+        
+        .index-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        
+        
+        /* 세 번째 박스 - 메인 컨텐츠 */
+        
+        
+        .index-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        
+        
+        .positive {
+            color: #4ade80;
+        }
+        
+        .negative {
+            color: #f87171;
+        }
+        
+        /* 내정보 폼 영역 */
+        .myinfo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            padding: 40px 20px;
+        }
+        
+        .myinfo-title {
+            font-family: 'Micro 5', monospace;
+            font-weight: bold;
+            font-size: 64px;
+            letter-spacing: 2px;
+            color: black;
+            margin-bottom: 40px;
+        }
+        
+        .myinfo-form {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+            background: #f9fafb;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .user-info {
+            background: #f3f4f6;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .user-info h3 {
+            margin: 0 0 10px 0;
+            color: #374151;
+            font-size: 18px;
+        }
+        
+        .user-info p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 16px;
+        }
+        
+        /* 차트 영역 */
+        
+        
+        
+        
+        /* 로딩 오버레이 */
+        
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <!-- Logo -->
+            <div class="logo-section">
+                <a href="/index.html" class="asr-logo">ASR</a>
+            </div>
+            
+            <!-- Navigation -->
+            <nav class="nav-links">
+                <a href="/index.html" class="nav-link">홈</a>
+                <a href="/chart.html" class="nav-link">차트</a>
+                <a href="/news.html" class="nav-link">뉴스</a>
+                <a href="/chatbot.html" class="nav-link">AI챗봇</a>
+                <a href="/board.html" class="nav-link">게시판</a>
+            </nav>
+            
+            <!-- Login Button -->
+            <a href="/login.html" class="login-btn">로그인</a>
+        </div>
+    </header>
+
+    <!-- 첫 번째 박스 - 지수 -->
+    <div class="index-box">
+        <div class="index-container" id="index-container">
+            <!-- 실제 데이터가 여기에 동적으로 추가됩니다 -->
+        </div>
+    </div>
+
+    <!-- 내정보 폼 영역 -->
+    <div class="myinfo-container">
+        <h1 class="myinfo-title">ASR</h1>
+        
+        <div class="myinfo-form">
+            <div class="user-info">
+                <h3>로그인된 사용자</h3>
+                <p id="username-display">로딩 중...</p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">아이디</label>
+                <input type="text" id="username" class="form-input" readonly>
+            </div>
+            
+            
+            <div class="form-group">
+                <label class="form-label">가입일</label>
+                <input type="text" id="joinDate" class="form-input" readonly>
+            </div>
+        </div>
+    </div>
+</body>
+    
+    <!-- Main JavaScript -->
+    <script src="js/chart.js"></script>
+    <script src="js/auth.js"></script>
+    
+    <!-- 내정보 JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                // 서버에서 로그인 상태 확인
+                const response = await fetch('/api/user/status');
+                const data = await response.json();
+                
+                if (data.isLoggedIn && data.username) {
+                    // 로그인된 경우 사용자 정보 표시
+                    document.getElementById('username-display').textContent = data.username;
+                    document.getElementById('username').value = data.username;
+                    document.getElementById('joinDate').value = new Date().toLocaleDateString('ko-KR');
+                } else {
+                    // 로그인되지 않은 경우 로그인 페이지로 이동
+                    alert('로그인이 필요합니다.');
+                    window.location.href = '/login.html';
+                }
+            } catch (error) {
+                console.error('로그인 상태 확인 오류:', error);
+                alert('로그인 상태를 확인할 수 없습니다. 로그인 페이지로 이동합니다.');
+                window.location.href = '/login.html';
+            }
+        });
+    </script>
+</html>

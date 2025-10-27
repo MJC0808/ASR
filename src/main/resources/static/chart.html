@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASR - Advanced Stock Rader</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Micro+5&display=swap" rel="stylesheet">
+
+    <style>
+        /* CSS 리셋 */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: white;
+            color: black;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* 헤더 영역 */
+        .header {
+            background: transparent !important;
+            color: white !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            position: relative !important;
+            width: 100% !important;
+            left: 0 !important;
+            right: 0 !important;
+            top: 0 !important;
+            bottom: auto !important;
+            transform: none !important;
+            box-sizing: border-box !important;
+        }
+        
+        .header > div {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            max-width: 1600px !important;
+            margin: 0 auto !important;
+            padding: 0 !important;
+            width: 100% !important;
+            position: relative !important;
+            left: 0 !important;
+            right: 0 !important;
+            top: 0 !important;
+            bottom: auto !important;
+            transform: none !important;
+            box-sizing: border-box !important;
+        }
+        
+        /* ASR 로고 */
+        .logo-section {
+            flex: 0 0 auto;
+        }
+        
+        .asr-logo {
+            font-family: 'Micro 5', monospace;
+            font-weight: bold;
+            font-size: 64px;
+            letter-spacing: 2px;
+            color: black !important;
+            text-decoration: none;
+        }
+        
+        /* 네비게이션 */
+        .nav-links {
+            display: flex;
+            gap: 50px;
+            align-items: center;
+            flex: 1;
+            justify-content: center;
+        }
+        
+        .nav-link {
+            color: black !important;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 18px;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: #3b82f6 !important;
+        }
+        
+        /* 로그인 버튼 */
+        .login-btn {
+            background: black;
+            color: white;
+            border: 1px solid #333;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            flex: 0 0 auto;
+        }
+        
+        .login-btn:hover {
+            background: #333;
+            border-color: #555;
+        }
+
+        /* 박스 공통 스타일 */
+        .box {
+            background: #2D2D2D;
+            color: white;
+            margin: 10px;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        /* 첫 번째 박스 - 검색 */
+        .search-box {
+            background: #2D2D2D;
+            color: white;
+            margin: 5px;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+
+        /* 컨테이너 - 검색과 메인 컨텐츠 */
+        .content-container {
+            padding: 45px;
+        }
+
+        /* 두 번째 박스 - 지수 */
+        .index-box {
+            background: #2D2D2D;
+            color: white;
+            margin: 5px 0;
+            border-radius: 0;
+            padding: 10px 20px;
+            display: flex;
+            gap: 60px;
+            align-items: center;
+            font-size: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .index-container {
+            display: flex;
+            gap: 120px;
+            align-items: center;
+            animation: scroll-left 120s linear infinite;
+            animation-delay: 1s;
+            white-space: nowrap;
+        }
+
+        @keyframes scroll-left {
+            0% {
+                transform: translateX(0%);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        .index-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-input {
+            background: #404040;
+            border: 1px solid #505050;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            width: 180px;
+            font-size: 14px;
+        }
+
+        .search-input::placeholder {
+            color: #888;
+        }
+
+        .search-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .timeframe-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .timeframe-select {
+            background: #404040;
+            color: white;
+            border: 1px solid #505050;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            min-width: 100px;
+        }
+
+        .timeframe-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .period-link {
+            color: #888;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .period-link:hover {
+            color: white;
+        }
+
+        .chart-type {
+            display: flex;
+            gap: 15px;
+            margin-left: 20px;
+        }
+
+        .chart-type-label {
+            color: #888;
+            font-size: 16px;
+        }
+
+        .refresh-btn {
+            background: #404040;
+            color: white;
+            border: 1px solid #505050;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-left: auto;
+            font-size: 14px;
+        }
+
+        /* 세 번째 박스 - 메인 컨텐츠 */
+        .main-box {
+            background: #2D2D2D;
+            color: white;
+            margin: 5px 0;
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 710px;
+        }
+
+        .charts-container {
+            display: flex;
+            gap: 15px;
+            height: 800px;
+            min-height: 800px;
+        }
+
+        .left-charts {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .right-panels {
+            width: 280px;
+            min-width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .index-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .index-name {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        .index-value {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 2px;
+        }
+
+        .index-change {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .positive {
+            color: #4ade80;
+        }
+
+        .negative {
+            color: #f87171;
+        }
+
+        /* 차트 영역 */
+        .chart-section {
+            background: #1e1e1e;
+            border: 1px solid #404040;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-title {
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 400;
+            margin-top: 2px;
+            margin-bottom: 2px;
+            padding-bottom: 1px;
+            text-align: left;
+        }
+
+        .stock-info {
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 400;
+            margin-top: 0px;
+            margin-bottom: 2px;
+            padding: 1px ;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .stock-name {
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 24px;
+        }
+
+        .stock-exchange {
+            color: #9ca3af;
+        }
+
+        .stock-symbol {
+            color: #9ca3af;
+        }
+
+        .stock-price {
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 24px;
+        }
+
+        .stock-change {
+            color: #4ade80;
+            font-weight: 500;
+        }
+
+        .main-chart-section {
+            flex: 4.5;
+            min-height: 400px;
+        }
+
+        .volume-chart-section {
+            flex: 1.5;
+            min-height: 100px;
+        }
+
+        .indicator-chart-section {
+            flex: 2;
+            min-height: 100px;
+        }
+
+        .analysis-panel {
+            background: #1e1e1e;
+            border: 1px solid #404040;
+            border-radius: 8px;
+            padding: 15px;
+            flex: 6;
+            display: flex;
+            flex-direction: column;
+            min-height: 350px;
+        }
+
+        .indicator-panel {
+            background: #1e1e1e;
+            border: 1px solid #404040;
+            border-radius: 8px;
+            padding: 15px;
+            flex: 0.9;
+            display: flex;
+            flex-direction: column;
+            min-height: 228px;
+        }
+
+        .chart-container {
+            background: #0a0a0a;
+            border-radius: 6px;
+            flex: 0.9;
+            position: relative;
+            min-height: 300px;
+        }
+
+        .volume-container {
+            background: #0a0a0a;
+            border-radius: 6px;
+            flex: 1.5;
+            position: relative;
+            min-height: 10px;
+        }
+
+        .indicator-container {
+            background: #0a0a0a;
+            border-radius: 6px;
+            flex: 2;
+            position: relative;
+            min-height: 10px;
+        }
+
+        .chart-toggle-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .analysis-list, .indicator-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .analysis-item, .indicator-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #404040;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .analysis-item:hover, .indicator-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 3px solid #3b82f6;
+            padding-left: 10px;
+        }
+
+        .analysis-item:last-child, .indicator-item:last-child {
+            border-bottom: none;
+        }
+
+        .analysis-item.selected, .indicator-item.selected {
+            background: rgba(16, 185, 129, 0.2);
+            border-left: 3px solid #10b981;
+            padding-left: 10px;
+            color: #10b981;
+        }
+
+        .analysis-item.active {
+            background: rgba(16, 185, 129, 0.2);
+            border-left: 3px solid #10b981;
+            padding-left: 10px;
+            color: #10b981;
+        }
+
+        .analysis-item.active::after {
+            content: "";
+        }
+
+        /* 로딩 오버레이 */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* 푸터 */
+        .footer {
+            background: #2a2a2a;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #404040;
+        }
+
+        .footer-logo {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 24px;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .footer-text {
+            color: #888;
+            font-size: 16px;
+        }
+
+        /* 스크롤바 */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #2a2a2a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #505050;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #606060;
+        }
+
+        /* 반응형 처리 */
+        @media (max-width: 1200px) {
+            .charts-container {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .right-panels {
+                width: 100%;
+                min-width: auto;
+                flex-direction: row;
+                gap: 20px;
+            }
+
+            .analysis-panel, .indicator-panel {
+                flex: 1;
+                min-height: 200px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .search-box {
+                flex-direction: column;
+                gap: 10px;
+                align-items: stretch;
+            }
+
+            .index-box {
+                flex-wrap: wrap;
+                gap: 15px;
+            }
+
+            .nav-links {
+                gap: 20px;
+            }
+
+            .nav-link {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div>
+            <!-- Logo -->
+            <div class="logo-section">
+                <a href="/index.html" class="asr-logo">ASR</a>
+            </div>
+            
+            <!-- Navigation -->
+            <nav class="nav-links">
+                <a href="/index.html" class="nav-link">홈</a>
+                <a href="/chart.html" class="nav-link">차트</a>
+                <a href="/news.html" class="nav-link">뉴스</a>
+                <a href="/chatbot.html" class="nav-link">AI챗봇</a>
+                <a href="/board.html" class="nav-link">게시판</a>
+            </nav>
+            
+            <!-- Login Button -->
+            <a href="/login.html" class="login-btn">로그인</a>
+        </div>
+    </header>
+
+<!-- 첫 번째 박스 - 지수 -->
+<div class="index-box">
+    <div class="index-container" id="index-container">
+        <!-- 실제 데이터가 여기에 동적으로 추가됩니다 -->
+    </div>
+</div>
+
+<!-- 컨테이너 - 검색과 메인 컨텐츠 -->
+<div class="content-container">
+    <!-- 두 번째 박스 - 검색 -->
+    <div class="search-box">
+        <input type="text" class="search-input" placeholder="(검색창)" id="search-input" value="AAPL">
+        <button class="search-btn" id="search-btn">검색</button>
+        <div class="timeframe-group">
+            <select class="timeframe-select" id="timeframe-select">
+                <option value="1m">1분</option>
+                <option value="3m">3분</option>
+                <option value="5m">5분</option>
+                <option value="10m">10분</option>
+                <option value="15m">15분</option>
+                <option value="30m">30분</option>
+                <option value="60m">60분</option>
+                <option value="1d" selected>일</option>
+                <option value="1wk">주</option>
+                <option value="1mo">월</option>
+                <option value="1y">년</option>
+            </select>
+        </div>
+        <button class="refresh-btn" id="refresh-btn">새로고침</button>
+    </div>
+
+    <!-- 세 번째 박스 - 메인 컨텐츠 -->
+    <div class="main-box">
+    <div class="charts-container">
+        <!-- 왼쪽 차트 영역 -->
+        <div class="left-charts">
+            <!-- 메인 차트 -->
+            <div class="chart-section main-chart-section">
+                <div class="stock-info" id="stock-info">
+                    <span class="stock-name">Apple Inc.</span>
+                    <span class="stock-exchange">NASDAQ</span>
+                    <span class="stock-symbol">/ AAPL</span>
+                    <span class="stock-price">$ 258.6</span>
+                    <span class="stock-change">▲ 1.40%</span>
+                </div>
+                <div class="chart-container" id="main-chart">
+                    <div id="main-loading" class="loading-overlay hidden">
+                        <span class="loading loading-spinner loading-lg"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 거래량 차트 -->
+            <div class="chart-section volume-chart-section">
+                <div class="volume-container" id="volume-chart">
+                    <div id="volume-loading" class="loading-overlay hidden">
+                        <span class="loading loading-spinner loading-lg"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 보조지표 차트 -->
+            <div class="chart-section indicator-chart-section">
+                <div class="indicator-container" id="indicator-chart">
+                    <div id="indicator-loading" class="loading-overlay hidden">
+                        <span class="loading loading-spinner loading-lg"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 오른쪽 패널 영역 -->
+        <div class="right-panels">
+            <!-- 차트분석 패널 (메인차트+거래량차트 높이) -->
+            <div class="analysis-panel">
+                <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-chart-line"></i>
+                    차트분석
+                </h3>
+                <ul class="analysis-list" id="analysis-list">
+                    <li class="analysis-item" data-analysis="golden_dead_cross">이동평균선 골든크로스 / 데드크로스</li>
+                    <li class="analysis-item" data-analysis="support_resistance">지지선과 저항선 분석</li>
+                    <li class="analysis-item" data-analysis="trend_line">추세선 분석</li>
+                    <li class="analysis-item" data-analysis="triangle_pattern">삼각수렴 패턴</li>
+                    <li class="analysis-item" data-analysis="head_and_shoulders">헤드앤숄더 패턴</li>
+                    <li class="analysis-item" data-analysis="double_top_bottom">더블탑 / 더블바텀</li>
+                </ul>
+            </div>
+
+            <!-- 보조지표 패널 (보조지표차트 높이) -->
+            <div class="indicator-panel">
+                <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-chart-bar"></i>
+                    보조지표
+                </h3>
+                <ul class="indicator-list" id="indicator-list">
+                    <li class="indicator-item" data-indicator="rsi">RSI (Relative Strength Index)</li>
+                    <li class="indicator-item" data-indicator="macd">MACD (Moving Average Convergence Divergence)</li>
+                    <li class="indicator-item" data-indicator="stochastic">Stochastic Slow/Fast</li>
+                    <li class="indicator-item" data-indicator="bollinger">Bollinger Bands (볼린저 밴드)</li>
+                    <li class="indicator-item" data-indicator="obv">OBV (On Balance Volume)</li>
+                    <li class="indicator-item" data-indicator="cci">CCI (Commodity Channel Index)</li>
+                    <li class="indicator-item" data-indicator="adx">ADX (Average Directional Index)</li>
+                    <li class="indicator-item" data-indicator="roc">ROC (Rate of Change)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
+
+<!-- Main JavaScript -->
+<script src="js/chart.js"></script>
+<script src="js/auth.js"></script>
+</body>
+</html>
