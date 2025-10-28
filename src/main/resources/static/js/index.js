@@ -34,14 +34,11 @@ class NewsAnalysis {
     }
 
     async performNewsAnalysis() {
-        const startPeriod = document.getElementById('start-period').value;
-        const endPeriod = document.getElementById('end-period').value;
-        
         // 체크박스에서 선택된 모든 뉴스 소스 가져오기
         const selectedNewsSources = Array.from(document.querySelectorAll('input[name="news-source"]:checked'))
             .map(checkbox => checkbox.value);
 
-        console.log('뉴스분석 시작:', { startPeriod, endPeriod, selectedNewsSources });
+        console.log('뉴스분석 시작:', { selectedNewsSources });
 
         // 최소 하나의 뉴스 소스가 선택되어 있는지 확인
         if (selectedNewsSources.length === 0) {
@@ -60,7 +57,7 @@ class NewsAnalysis {
             const allArticles = [];
             for (const source of selectedNewsSources) {
                 try {
-                    const rssResponse = await fetch(`/api/chart/news/rss?feed=${source}`);
+                    const rssResponse = await fetch(`/api/chart/news/rss?feed=${source}&limit=100`);
                     const rssData = await rssResponse.json();
                     
                     if (rssData.success && rssData.articles) {
@@ -96,8 +93,6 @@ class NewsAnalysis {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    startPeriod,
-                    endPeriod,
                     newsSources: selectedNewsSources,
                     articles: allArticles  // 수집한 뉴스 데이터 전송
                 })

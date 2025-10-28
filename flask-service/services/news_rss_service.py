@@ -86,7 +86,7 @@ def _crawl_article_content(url):
         logger.warning(f"본문 크롤링 실패 ({url[:80]}): {str(e)[:100]}")
         return ''
 
-def _crawl_naver_news(limit=20):
+def _crawl_naver_news(limit=100):
     """
     네이버 금융 '실시간 속보' 뉴스를 크롤링
     여러 URL에서 뉴스를 수집하고 필터링하여 실제 뉴스만 추출
@@ -217,7 +217,7 @@ def _parse_google_item(item):
         "published": pub_date_str
     }
 
-def _crawl_google_news(limit=20):
+def _crawl_google_news(limit=100):
     """
     Google News RSS를 크롤링
     """
@@ -243,7 +243,7 @@ def _crawl_google_news(limit=20):
     logger.info(f"구글 뉴스 크롤링 완료. 총 {len(news_items)}개 수집.")
     return news_items
 
-def _crawl_yahoo_news(limit=20):
+def _crawl_yahoo_news(limit=100):
     """
     Yahoo Finance RSS를 크롤링
     """
@@ -329,12 +329,13 @@ def _crawl_yahoo_news(limit=20):
     logger.info(f"Yahoo Finance 크롤링 완료. 총 {len(news_items)}개 수집.")
     return news_items
 
-def get_news_rss_endpoint(feed_key=None):
+def get_news_rss_endpoint(feed_key=None, limit=100):
     """
     RSS 피드를 가져와서 파싱합니다.
     
     Args:
         feed_key: 뉴스 소스 키 ('hankyung', 'mk', 'naver', 'nasdaq', 'marketbeat')
+        limit: 수집할 최대 뉴스 개수
     
     Returns:
         dict: 성공 여부와 뉴스 기사 목록을 포함한 딕셔너리
@@ -346,7 +347,7 @@ def get_news_rss_endpoint(feed_key=None):
         
         # 네이버는 크롤링 방식으로 처리
         if feed_key == 'naver':
-            raw_articles = _crawl_naver_news(limit=20)
+            raw_articles = _crawl_naver_news(limit=limit)
             
             # 새로운 형식을 기존 형식으로 변환
             articles = []
@@ -369,7 +370,7 @@ def get_news_rss_endpoint(feed_key=None):
         
         # Google News는 크롤링 방식으로 처리
         if feed_key == 'google':
-            articles = _crawl_google_news(limit=20)
+            articles = _crawl_google_news(limit=limit)
             
             logger.info(f"Successfully fetched {len(articles)} articles from google")
             
@@ -381,7 +382,7 @@ def get_news_rss_endpoint(feed_key=None):
         
         # Yahoo Finance는 크롤링 방식으로 처리
         if feed_key == 'yahoo':
-            articles = _crawl_yahoo_news(limit=20)
+            articles = _crawl_yahoo_news(limit=limit)
             
             if len(articles) == 0:
                 # Yahoo RSS가 실패할 경우 빈 결과 반환
@@ -461,7 +462,7 @@ def get_news_rss_endpoint(feed_key=None):
         # 기사 추출 (entries가 없을 경우 대비)
         articles = []
         if hasattr(feed, 'entries') and feed.entries:
-            for entry in feed.entries[:20]:  # 최대 20개 기사
+            for entry in feed.entries[:limit]:  # limit 파라미터 사용
                 article = {
                     'title': entry.get('title', 'No title'),
                     'link': entry.get('link', '#'),

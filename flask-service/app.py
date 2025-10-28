@@ -482,11 +482,13 @@ def analyze_chart_patterns():
 
 
 @app.route('/api/news/rss', methods=['GET'])
+@app.route('/api/chart/news/rss', methods=['GET'])
 def get_news_rss():
     """RSS 뉴스 피드 엔드포인트"""
     try:
         feed_key = request.args.get('feed', None)
-        result = get_news_rss_endpoint(feed_key)
+        limit = int(request.args.get('limit', 100))
+        result = get_news_rss_endpoint(feed_key, limit)
         return jsonify(result)
     except Exception as e:
         logger.error(f"Error in get_news_rss: {str(e)}")
